@@ -1,15 +1,16 @@
 package academy_study.handler;
 import java.sql.Date;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import academy_study.domain.Board;
 
 public class BoardHandler {
 	Scanner kb;
-	ArrayList<Board> bl =new ArrayList<>();
-	public BoardHandler(Scanner kb) {
+	List<Board> bl ;
+	public BoardHandler(Scanner kb ,List<Board> list) {
 		this.kb = kb;
+		this.bl = list;
 	}
 
 	public void listBoard() {
@@ -24,6 +25,7 @@ public class BoardHandler {
 	}
 
 	public void addBoard() {
+	try {	
 		Board b = new Board();
 		System.out.print("번호? ");
 		b.setNo(Integer.parseInt(kb.nextLine()));
@@ -32,6 +34,10 @@ public class BoardHandler {
 		b.setDate(new Date(System.currentTimeMillis()));
 		b.setCount(0);
 		bl.add(b);
+		System.out.println("저장되었습니다.");
+	}catch(Exception e ) {
+		e.printStackTrace();
+	}
 	}
 
 	public void detailBoard() {

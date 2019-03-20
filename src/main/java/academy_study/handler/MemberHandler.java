@@ -1,6 +1,6 @@
 package academy_study.handler;
 import java.sql.Date;
-import java.util.ArrayList;
+import java.util.List;
 import java.util.Scanner;
 
 import academy_study.domain.Member;
@@ -8,10 +8,11 @@ import academy_study.domain.Member;
 public class MemberHandler {
 
 	Scanner kb;
-	ArrayList<Member> ml = new ArrayList<>(20);
+	List<Member> ml ;
 
-	public MemberHandler(Scanner kb) {
+	public MemberHandler(Scanner kb , List<Member> ml) {
 		this.kb = kb;
+		this.ml = ml;
 	}
 
 	public void listMember() {
@@ -128,9 +129,11 @@ public class MemberHandler {
 			 Member m = ml.get(i);
 			 if(m.getNo() == no) {
 				 return i;
+		
 			 }
+		
 		}
-		return -1;
+		return -2;
 	}
 
 

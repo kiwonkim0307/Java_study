@@ -1,18 +1,19 @@
 package academy_study.handler;
 import java.sql.Date;
+import java.util.List;
 import java.util.Scanner;
 
 import academy_study.domain.Lesson;
-import academy_study.util.ArrayList;
 
 public class LessonHandler {
 
 	Scanner kb;
 
-	ArrayList<Lesson> ll = new ArrayList<>();
+	List<Lesson> ll ;
 
-	public LessonHandler(Scanner kb) {
+	public LessonHandler(Scanner kb,List<Lesson> ll) {
 		this.kb = kb;
+		this.ll = ll;
 	}
 
 	public  void listLesson() {
