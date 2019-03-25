@@ -1,4 +1,12 @@
 package academy_study;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Date;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -26,7 +34,7 @@ import academy_study.handler.MemberDeleteCommand;
 import academy_study.handler.MemberDetailCommand;
 import academy_study.handler.MemberListCommand;
 import academy_study.handler.MemberUpdateCommand;
-//24번 할 차례
+//28번 할 차례
 public class App {
 	
 	static ArrayList<Board> blist = new ArrayList<>();
@@ -37,8 +45,10 @@ public class App {
 	static	Stack<String> st = new Stack<>();
 	static	Queue<String> ut = new LinkedList<>();;
 
-	public static void main(String[]  args) {
-
+	public static void main(String[]  args) throws IOException {
+		loadLessonData();
+		
+		
 		HashMap<String,Object>map = new HashMap<>();
 		App app = new App();
 		
@@ -79,6 +89,7 @@ public class App {
 				app.printCommandHistory2();
 			}else if(command.equalsIgnoreCase("q")) {
 				System.out.println("잘가요~");
+				saveLessonData();
 				kb.close();
 				break;
 			}
@@ -90,6 +101,57 @@ public class App {
 		}//while
 		
 	}//main
+
+
+
+	private static void loadLessonData() throws IOException {
+			
+			File file = new File("lesson.txt");
+		
+			if(!file.exists()) {
+				file.createNewFile();
+				System.out.println("생성됨");
+			}
+		
+			FileReader in2 = new FileReader(file);
+			BufferedReader in = new BufferedReader(in2);
+			String s = null;
+			while((s = in.readLine()) !=null) {
+				String[] ss = s.split(",");
+				Lesson lesson = new Lesson();
+				lesson.setNo(Integer.parseInt(ss[0]));
+				lesson.setTitle(ss[1]);
+				lesson.setContents(ss[2]);
+				lesson.setStart_day(Date.valueOf(ss[3]));
+				lesson.setEnd_day(Date.valueOf(ss[4]));
+				lesson.setTotal_time(Integer.parseInt(ss[5]));
+				lesson.setDay_time(Integer.parseInt(ss[6]));
+				
+				llist.add(lesson);
+			}
+	
+	}
+
+
+
+	private static void saveLessonData() throws IOException {
+			FileWriter out2 = new FileWriter("lesson.txt");
+			BufferedWriter out1 = new BufferedWriter(out2);
+			PrintWriter out = new PrintWriter(out1);
+			for(Lesson lesson : llist) {
+				out.printf("%d,%s,%s,%s,%s,%d,%d",
+						lesson.getNo(),
+						lesson.getTitle(),
+						lesson.getContents(),
+						lesson.getStart_day(),
+						lesson.getEnd_day(),
+						lesson.getTotal_time(),
+						lesson.getDay_time());
+			}
+			System.out.println("세이브함");
+	
+	}
+
 
 	private  void printCommandHistory2() {
 		Iterator <String> stiterator = ut.iterator();
