@@ -1,12 +1,9 @@
 package academy_study.domain;
-import java.io.Serializable;
 import java.sql.Date;
 
-public class Member implements Cloneable,Serializable{
+public class Member implements Cloneable{
 
-  private static final long serialVersionUID = 1L;
- 
-  private	int no;
+	private	int no;
 	private	String name ;
 	private	String email ;
 	private	String password ;

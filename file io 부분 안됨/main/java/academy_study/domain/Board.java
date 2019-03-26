@@ -1,12 +1,8 @@
 package academy_study.domain;
-import java.io.Serializable;
 import java.sql.Date;
 
-public class Board implements Cloneable ,Serializable{
- 
-  private static final long serialVersionUID = 1L;
-  
-  private	int no ;
+public class Board implements Cloneable{
+	private	int no ;
 	private	String contents ;
 	private	Date date = new Date(System.currentTimeMillis());
 	private	int count = 0;
