@@ -2,8 +2,8 @@ package academy_study;
 
 public class DataLoaderListener implements ApplicationContextListener{
 @Override
-public void Start() {
-  
+public void start() {
+  System.out.println("데이터를 읽어옵니다");
   App.loadBoardData();
   App.loadMemberData();
   try {
@@ -17,7 +17,10 @@ public void Start() {
 
 
 @Override
-  public void End() {
-    
+  public void end() {
+  System.out.println("데이터를 저장합니다");
+  App.saveBoardData();
+  App.saveLessonData();
+  App.saveMemberData();
   }
 }

@@ -35,6 +35,7 @@ import academy_study.handler.MemberUpdateCommand;
 //31번 할 차례
 public class App {
 
+
   static ArrayList<Board> blist = new ArrayList<>();
   static ArrayList<Lesson> llist = new ArrayList<>();
   static ArrayList<Member> mlist = new ArrayList<>();
@@ -44,9 +45,16 @@ public class App {
   static	Queue<String> ut = new LinkedList<>();;
 
   public static void main(String[]  args) throws Exception {
-    
+
+    HashMap<String,Object>observers = new HashMap<>();
+    observers.put("observer", new DataLoaderListener());
+
+    ApplicationContextListener dataobserver = (ApplicationContextListener)observers.get("observer");
+    dataobserver.start();
+
 
     HashMap<String,Object>map = new HashMap<>();
+
     App app = new App();
 
     map.put("/board/add", new BoardAddCommand(blist,kb));
@@ -86,9 +94,7 @@ public class App {
           app.printCommandHistory2();
         }else if(command.equalsIgnoreCase("q")) {
           System.out.println("잘가요~");
-          saveLessonData();
-          saveMemberData();
-          saveBoardData();
+          dataobserver.end();
           kb.close();
           break;
         }
