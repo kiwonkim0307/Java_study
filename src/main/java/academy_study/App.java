@@ -10,9 +10,11 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.Queue;
+import java.util.Map;
 import java.util.Scanner;
 import java.util.Stack;
+
+import academy_study.context.ApplicationListener;
 import academy_study.domain.Board;
 import academy_study.domain.Lesson;
 import academy_study.domain.Member;
@@ -32,213 +34,188 @@ import academy_study.handler.MemberDeleteCommand;
 import academy_study.handler.MemberDetailCommand;
 import academy_study.handler.MemberListCommand;
 import academy_study.handler.MemberUpdateCommand;
+import academy_study.listener.BoardDataLoaderListener;
 //31번 할 차례
 public class App {
 
+	static ArrayList<ApplicationListener>observers = new ArrayList<>();
 
-  static ArrayList<Board> blist = new ArrayList<>();
-  static ArrayList<Lesson> llist = new ArrayList<>();
-  static ArrayList<Member> mlist = new ArrayList<>();
-  static Scanner kb = new Scanner(System.in);
-  static	int size =10;
-  static	Stack<String> st = new Stack<>();
-  static	Queue<String> ut = new LinkedList<>();;
+	static HashMap<String,Object> context = new HashMap<>();
 
-  public static void main(String[]  args) throws Exception {
+	static {
+		context.put("kb", new Scanner(System.in));
+		context.put("blist",  new ArrayList<Board>());
+		context.put("llist",  new ArrayList<Lesson>());
+		context.put("mlist",  new ArrayList<Member>());
+		context.put("st",  new Stack<String>());
+		context.put("ut",  new LinkedList<String>());
+	}
 
-    HashMap<String,Object>observers = new HashMap<>();
-    observers.put("observer", new DataLoaderListener());
-
-    ApplicationContextListener dataobserver = (ApplicationContextListener)observers.get("observer");
-    dataobserver.start();
-
-
-    HashMap<String,Object>map = new HashMap<>();
-
-    App app = new App();
-
-    map.put("/board/add", new BoardAddCommand(blist,kb));
-    map.put("/board/list", new BoardListCommand(blist,kb));
-    map.put("/board/detail", new BoardDetailCommand(blist,kb));
-    map.put("/board/update", new BoardUpdateCommand(blist,kb));
-    map.put("/board/delete", new BoardDeleteCommand(blist,kb));
-
-    map.put("/lesson/add", new LessonAddCommand(llist,kb));
-    map.put("/lesson/list", new LessonListCommand(llist,kb));
-    map.put("/lesson/detail", new LessonDetailCommand(llist,kb));
-    map.put("/lesson/update", new LessonUpdateCommand(llist,kb));
-    map.put("/lesson/delete", new LessonDeleteCommand(llist,kb));
-
-    map.put("/member/add", new MemberAddCommand(mlist,kb));
-    map.put("/member/list", new MemberListCommand(mlist,kb));
-    map.put("/member/detail", new MemberDetailCommand(mlist,kb));
-    map.put("/member/update", new MemberUpdateCommand(mlist,kb));
-    map.put("/member/delete", new MemberDeleteCommand(mlist,kb));
-
-    while(true) {	
-      try {
-        System.out.print("명령> ");
-        String command = kb.nextLine();
-
-        st.push(command);	
-        ut.offer(command);
-
-        Command cg = (Command) map.get(command);
-
-        if(cg != null) {
-          cg.excute();
-        }else if(command.equals("/history")) {
-          app.printCommandHistory();
-
-        }else if(command.equals("/history2")) {
-          app.printCommandHistory2();
-        }else if(command.equalsIgnoreCase("q")) {
-          System.out.println("잘가요~");
-          dataobserver.end();
-          kb.close();
-          break;
-        }
-        else 
-          System.out.println("잘못된 명령어 입니다.");
-      }catch(Exception e) {	
-        e.printStackTrace();
-      }
-    }//while
-
-  }//main
+	static void addApplicationListner(ApplicationListener listener) {
+		observers.add(listener);
+	}
 
 
-  public static void saveMemberData() {
-    try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
-        new FileOutputStream("member.bin2")))) {
+	@SuppressWarnings("unchecked")
+	public static void main(String[]  args) throws Exception {
 
-      // 첫 번째로 데이터의 개수(int)를 먼저 출력 한다.
-      out.writeInt(mlist.size());
+		addApplicationListner(new BoardDataLoaderListener());
 
-      for (Member m : mlist) {
-        out.writeObject(m);
-      }
+		for(ApplicationListener observer : observers) {
+			observer.startApplication(context);
+		}
 
-    } catch (Exception e) {
-      System.out.println("회원 데이터를 쓰는 중 오류 발생: " + e.toString());
-    }
-  }
+		Scanner kb = (Scanner) context.get("kb");
+		ArrayList<Board> blist  =(ArrayList<Board>)context.get("blist");
+		ArrayList<Lesson> llist  =(ArrayList<Lesson>)context.get("llist");
+		ArrayList<Member> mlist  =(ArrayList<Member>)context.get("mlist");
+		Stack<String> st = (Stack<String>)context.get("st");
+		LinkedList<String> ut = (LinkedList<String>)context.get("ut");
+		Map<String,Command> commandMap = new HashMap<>();
+
+		commandMap.put("/board/add", new BoardAddCommand(blist,kb));
+		commandMap.put("/board/list", new BoardListCommand(blist,kb));
+		commandMap.put("/board/detail", new BoardDetailCommand(blist,kb));
+		commandMap.put("/board/update", new BoardUpdateCommand(blist,kb));
+		commandMap.put("/board/delete", new BoardDeleteCommand(blist,kb));
+
+		commandMap.put("/lesson/add", new LessonAddCommand(llist,kb));
+		commandMap.put("/lesson/list", new LessonListCommand(llist,kb));
+		commandMap.put("/lesson/detail", new LessonDetailCommand(llist,kb));
+		commandMap.put("/lesson/update", new LessonUpdateCommand(llist,kb));
+		commandMap.put("/lesson/delete", new LessonDeleteCommand(llist,kb));
+
+		commandMap.put("/member/add", new MemberAddCommand(mlist,kb));
+		commandMap.put("/member/list", new MemberListCommand(mlist,kb));
+		commandMap.put("/member/detail", new MemberDetailCommand(mlist,kb));
+		commandMap.put("/member/update", new MemberUpdateCommand(mlist,kb));
+		commandMap.put("/member/delete", new MemberDeleteCommand(mlist,kb));
+
+		while(true) {	
+			try {
+				System.out.print("명령> ");
+				String command = kb.nextLine();
+
+				st.push(command);	
+				ut.offer(command);
+
+				Command cg =  commandMap.get(command);
+
+				if(cg != null) {
+					cg.excute();
+				}else if(command.equals("/history")) {
+					app.printCommandHistory();
+
+				}else if(command.equals("/history2")) {
+					app.printCommandHistory2();
+				}else if(command.equalsIgnoreCase("q")) {
+					System.out.println("잘가요~");
+					kb.close();
+					break;
+				}
+				else 
+					System.out.println("잘못된 명령어 입니다.");
+			}catch(Exception e) {	
+				e.printStackTrace();
+			}
+		}//while
+
+	}//main
 
 
-  public static void loadMemberData() {
-    ObjectInputStream in = null;
+	public static void saveMemberData() {
+		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
+				new FileOutputStream("member.bin2")))) {
 
-    try {
+			// 첫 번째로 데이터의 개수(int)를 먼저 출력 한다.
+			out.writeInt(mlist.size());
 
-      File file = new File("member.bin2");
-      if (!file.exists()) {
-        file.createNewFile();
-        return;
-      }
+			for (Member m : mlist) {
+				out.writeObject(m);
+			}
 
-      in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+		} catch (Exception e) {
+			System.out.println("회원 데이터를 쓰는 중 오류 발생: " + e.toString());
+		}
+	}
 
-      // 파일의 첫 번째 데이터가 저장된 데이터의 개수(int)이다.
-      int length = in.readInt();
 
-      for (int i = 0; i < length; i++) {
-        mlist.add((Member)in.readObject());
-      }
+	public static void loadMemberData() {
+		ObjectInputStream in = null;
 
-    } catch (Exception e) {
-      System.out.println("회원 데이터를 읽는 중 오류 발생: " + e.toString());
+		try {
 
-    } finally {
-      try {in.close();} catch (Exception e) {}
-    }
-  }
+			File file = new File("member.bin2");
+			if (!file.exists()) {
+				file.createNewFile();
+				return;
+			}
 
-  public static void loadLessonData() throws Exception {
-    File file = new File("lesson2.data");
-    if (!file.exists()) {
-      file.createNewFile();
-      return;
-    }
-    try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream("lesson2.data")))){
+			in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
 
-      int len = in.readInt();
+			// 파일의 첫 번째 데이터가 저장된 데이터의 개수(int)이다.
+			int length = in.readInt();
 
-      for(int i=0; i <len; i++) {
-        llist.add((Lesson)in.readObject());
-      }
+			for (int i = 0; i < length; i++) {
+				mlist.add((Member)in.readObject());
+			}
 
-    } catch (Exception e) {
-      System.out.println("수업 데이터를 읽는 중 오류 발생: " + e.toString());
+		} catch (Exception e) {
+			System.out.println("회원 데이터를 읽는 중 오류 발생: " + e.toString());
 
-    } 
-  }
+		} finally {
+			try {in.close();} catch (Exception e) {}
+		}
+	}
 
-  public static void saveLessonData() {
-    try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("lesson2.data")))) {
-      out.writeInt(llist.size());
+	public static void loadLessonData() throws Exception {
+		File file = new File("lesson2.data");
+		if (!file.exists()) {
+			file.createNewFile();
+			return;
+		}
+		try (ObjectInputStream in = new ObjectInputStream(new BufferedInputStream(new FileInputStream("lesson2.data")))){
 
-      for(Lesson l : llist) {
-        out.writeObject(l);
-      }
+			int len = in.readInt();
 
-    } catch (Exception e) {
-      System.out.println("수업 데이터를 쓰는 중 오류 발생: " + e.toString());
-    }
-  }
-  public static void loadBoardData() {
-    ObjectInputStream in = null;
+			for(int i=0; i <len; i++) {
+				llist.add((Lesson)in.readObject());
+			}
 
-    try {
+		} catch (Exception e) {
+			System.out.println("수업 데이터를 읽는 중 오류 발생: " + e.toString());
 
-      File file = new File("board.bin2");
-      if (!file.exists()) {
-        file.createNewFile();
-        return;
-      }
+		} 
+	}
 
-      in = new ObjectInputStream(new BufferedInputStream(new FileInputStream(file)));
+	public static void saveLessonData() {
+		try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(new FileOutputStream("lesson2.data")))) {
+			out.writeInt(llist.size());
 
-      int length = in.readInt();
+			for(Lesson l : llist) {
+				out.writeObject(l);
+			}
 
-      for (int i = 0; i < length; i++) {
-        blist.add((Board)in.readObject());
-      }
+		} catch (Exception e) {
+			System.out.println("수업 데이터를 쓰는 중 오류 발생: " + e.toString());
+		}
+	}
 
-    } catch (Exception e) {
-      System.out.println("게시글 데이터를 읽는 중 오류 발생: " + e.toString());
 
-    } finally {
-      try {in.close();} catch (Exception e) {}
-    }
-  }
 
-  public static void saveBoardData() {
-    try (ObjectOutputStream out = new ObjectOutputStream(new BufferedOutputStream(
-        new FileOutputStream("board.bin2")))) {
+	public static void printCommandHistory2() {
+		
+		Iterator <String> stiterator = ut.iterator();
+		while(stiterator.hasNext())
+			System.out.println(stiterator.next());
 
-      out.writeInt(blist.size());
+	}
+	public static void printCommandHistory() {
+		Iterator <String> stiterator = st.iterator();
+		while(stiterator.hasNext())
+			System.out.println(stiterator.next());
 
-      for (Board b : blist) {
-        out.writeObject(b);
-      }
-
-    } catch (Exception e) {
-      System.out.println("게시글 데이터를 쓰는 중 오류 발생: " + e.toString());
-    }
-  }
-
-  public  void printCommandHistory2() {
-    Iterator <String> stiterator = ut.iterator();
-    while(stiterator.hasNext())
-      System.out.println(stiterator.next());
-
-  }
-  public  void printCommandHistory() {
-    Iterator <String> stiterator = st.iterator();
-    while(stiterator.hasNext())
-      System.out.println(stiterator.next());
-
-  }
+	}
 
 
 }
